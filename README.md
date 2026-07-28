@@ -19,29 +19,29 @@ See [MANUAL_TEST.md](MANUAL_TEST.md) for the full feature-by-feature smoke guide
 ## How it works
 
 ```
-                                    ┌─────────────────────────────────┐
+                                     ┌─────────────────────────────────┐
    Client ──►  nginx worker          │  ngx_http_trace_module          │
                │                     │                                 │
                │ POST_READ  ──────── │  decide: trace this request?    │
                │ SERVER_REWRITE      │         │ yes                   │
-               │ FIND_CONFIG         │         ▼                      │
-               │ REWRITE             │  ┌──────────────┐              │
+               │ FIND_CONFIG         │         ▼                       │
+               │ REWRITE             │  ┌───────────────┐              │
                │ PREACCESS           │  │ trace context │  r->pool     │
                │ ACCESS              │  │  · steps[]    │  auto-freed  │
                │ PRECONTENT          │  │  · vars[]     │              │
                │ CONTENT ──► proxy ──│──│  · tries[]    │              │
                │ LOG ────────────────│──│  · fault      │              │
                │                     │  │  · bodies     │              │
-               │                     │  └──────┬───────┘              │
+               │                     │  └──────┬────────┘              │
                │                     │         │ commit at LOG         │
-               │                     │         ▼                      │
-               │                     │  ┌──────────────┐              │
+               │                     │         ▼                       │
+               │                     │  ┌───────────────┐              │
                │                     │  │  ring buffer  │  shm slab    │
                │                     │  │  64 slots     │  mutex-guard │
                │                     │  │  + session    │              │
                │                     │  │    store      │              │
-               │                     │  └──────┬───────┘              │
-               └─────────────────────┼─────────┼──────────────────────┘
+               │                     │  └──────┬────────┘              │
+               └─────────────────────┼─────────┼───────────────────────┘
                                      │         │
    Operator ──►  /__trace/ ──────────┼─────────┘
                │  · sessions CRUD

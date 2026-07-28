@@ -112,12 +112,14 @@ ngx_http_trace_decide(ngx_http_request_t *r, ngx_http_trace_ctx_t *ctx)
         if (mcf != NULL && mcf->shm_zone != NULL) {
             shctx = mcf->shm_zone->data;
             if (shctx != NULL && shctx->sessions != NULL) {
-                ngx_shmtx_lock(&shctx->shpool->mutex);
-                ngx_http_trace_expire_locked(shctx, ngx_time());
-                ctx->session_id =
-                    ngx_http_trace_session_match_locked(shctx, r->uri.data,
-                                                        r->uri.len);
-                ngx_shmtx_unlock(&shctx->shpool->mutex);
+                if (shctx->nsessions > 0) {
+                    ngx_shmtx_lock(&shctx->shpool->mutex);
+                    ngx_http_trace_expire_locked(shctx, ngx_time());
+                    ctx->session_id =
+                        ngx_http_trace_session_match_locked(shctx, r->uri.data,
+                                                            r->uri.len);
+                    ngx_shmtx_unlock(&shctx->shpool->mutex);
+                }
             }
         }
     }

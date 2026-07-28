@@ -84,6 +84,10 @@ ngx_http_trace_json_str(u_char *p, u_char *last, ngx_str_t *s)
             if (c < 0x20) {
                 if (last - p < 6) { goto done; }
                 p = ngx_snprintf(p, last - p, "\\u%04xd", (ngx_uint_t) c);
+            } else if (c >= 0x7f) {
+                /* Escape non-ASCII high bytes as \u00XX to guarantee valid UTF-8 JSON */
+                if (last - p < 6) { goto done; }
+                p = ngx_snprintf(p, last - p, "\\u00%02xd", (ngx_uint_t) c);
             } else {
                 *p++ = c;
             }
